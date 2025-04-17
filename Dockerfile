@@ -1,14 +1,11 @@
-# Utilise une image Java officielle
-FROM openjdk:17-jdk-slim
-
-# Dossier de l'application dans le container
+FROM maven:3.8.5-openjdk-17 AS build
 WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
 
-# Copie le JAR dans le container
-COPY out/qrcode_jar/qrcode.jar app.jar
-
-# Port exposé (change selon ton app si besoin)
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
 
-# Commande pour démarrer l'app
-CMD ["java", "-jar", "app.jar"]
